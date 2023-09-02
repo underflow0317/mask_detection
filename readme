@@ -1,0 +1,5 @@
+face_detection(res10_300x300_ssd_iter_140000.caffemodel) is from: https://github.com/keyurr2/face-detection/tree/master
+
+steps:
+1. exec cmodel_train or opt_train to generate mask detection module
+2. exec detect_mask_image to test masked or without mask in img
