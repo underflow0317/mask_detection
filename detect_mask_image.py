@@ -12,20 +12,21 @@ import time
 import cv2
 import os
 
-def main():
+def prepare(filename):
     # image path
-    img_path="img/mask_multi.jpg"
+    img_path="uploads/"+filename
     
     # set mask confidence rate
     confidence_rate=0.5
     
     # load our serialized face detector model from disk
-    prototxtPath = "model_face_detector/deploy.prototxt"
-    weightsPath = "model_face_detector/res10_300x300_ssd_iter_140000.caffemodel"
+    prototxtPath = "../model_face_detector/deploy.prototxt"
+    weightsPath = "../model_face_detector/res10_300x300_ssd_iter_140000.caffemodel"
+
     faceNet = cv2.dnn.readNet(prototxtPath, weightsPath)
 
     # load the face mask detector model from disk
-    maskNet = load_model("masked_module")
+    maskNet = load_model("../masked_module")
 
     # load image
 
@@ -71,9 +72,10 @@ def main():
     pass
 
     # show the output image
-    cv2.imshow("Output", image)
-    cv2.imwrite('output.jpg', image)
+    #cv2.imshow("Output", image)
+    cv2.imwrite('static/output.jpg', image)
     cv2.waitKey(0)
+    return "output.jpg"
 pass
 
 
@@ -152,7 +154,8 @@ def detect_and_predict_mask(frame, faceNet, maskNet, confidence_rate):
   return (locs, preds)
 pass
 
-
+''''
 if __name__ == '__main__':
-  main()
+  prepare(filename)
 pass
+'''
