@@ -23,7 +23,7 @@ steps:
    test_size=0.1:  
        -acc=0.9826  
        -test_acc=0.9739   
-   test_size=0.3:
+   test_size=0.3:  
        -acc=0.9795  
        -test_acc=0.9843  
   
