@@ -15,6 +15,14 @@ import pickle
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2' 
 
+# 设置混合精度策略
+dtype = "float32"
+mixed_precision = False
+
+if mixed_precision:
+    dtype = "float16"
+    tf.keras.mixed_precision.experimental.set_policy('mixed_float16')
+
 class CModel(tf.Module):
     def __init__(self, i_width, i_height):
         super(CModel, self).__init__()
@@ -35,9 +43,11 @@ class CModel(tf.Module):
         baseModel = MobileNetV2(weights="imagenet", include_top=False, input_tensor=Input(shape=(self.width, self.height, z_size)))
         
         headModel = baseModel.output
-        headModel = AveragePooling2D(pool_size=(7, 7))(headModel)
+        headModel = AveragePooling2D(pool_size=(3, 3))(headModel)
         headModel = Flatten(name="flatten")(headModel)
-        headModel = Dense(128, activation="relu")(headModel)
+        headModel = Dense(64, activation="relu")(headModel)
+        headModel = Dense(32, activation="relu")(headModel)
+        headModel = Dense(16, activation="relu")(headModel)
         headModel = Dropout(0.5)(headModel)
         headModel = Dense(num_of_types, activation="softmax")(headModel)
 
@@ -51,7 +61,7 @@ class CModel(tf.Module):
     pass
     
     # 定義預測函數，使用 TensorFlow 函數簽名
-    @tf.function(input_signature=[tf.TensorSpec([None, 224, 224, 3], tf.float32)])
+    @tf.function(input_signature=[tf.TensorSpec([None, 112, 112, 3], tf.float32)])
     
     def predict(self, i_x):
         # 預測處理
@@ -90,7 +100,7 @@ class CModel(tf.Module):
     
 class TF_Process():
     @staticmethod # 指傳入自定義的參數即可
-    def Image_to_Array(pic, width=224, height=224):
+    def Image_to_Array(pic, width=112, height=112):
         image = load_img(pic, target_size=(width, height))
         image = img_to_array(image)
         image = preprocess_input(image)
@@ -165,18 +175,18 @@ class Data_Process():
 def main():
     # 讀取圖片和處理數據
     picdir = "./TrainData/"
-    width_size = 224
-    height_size = 224
+    width_size = 112
+    height_size = 112
 
     y_labels, x_data = Data_Process.load_pictures(picdir, width_size, height_size)
-    Data_Process.save_sample(y_labels, x_data, 'pic_mask_db_224_224.p')
-    y_labels, x_data = Data_Process.load_sample('pic_mask_db_224_224.p')
+    Data_Process.save_sample(y_labels, x_data, 'pic_mask_db_112_112.p')
+    y_labels, x_data = Data_Process.load_sample('pic_mask_db_112_112.p')
     
     y_c_labels, x_c_data = Data_Process.clean_data(y_labels, x_data)
-    (trainX, testX, trainY, testY) = train_test_split(x_c_data, y_c_labels, test_size=0.01, stratify=y_c_labels, random_state=42)
+    (trainX, testX, trainY, testY) = train_test_split(x_c_data, y_c_labels, test_size=0.1, stratify=y_c_labels, random_state=42)
     
     # 定義訓練參數
-    NumberOfOneTraining = 32
+    #NumberOfOneTraining = 32
     Training_times = 10
     steps_in_one_training_time = 20
     
@@ -197,7 +207,7 @@ def main():
     for e in range(Training_times):
         i = 0
         # 進行每個訓練時間的多個步驟
-        for x_batch, y_batch in aug.flow(trainX, trainY, batch_size=32):
+        for x_batch, y_batch in aug.flow(trainX, trainY, batch_size=8):
             i += 1
             if i >= steps_in_one_training_time:
                 break
@@ -210,6 +220,9 @@ def main():
             # 測試並顯示準確度
             accuracy = model.test(testY, testX)
             print(", accuracy, {}".format(accuracy), flush=True)
+            
+            # 清除会话以释放GPU内存
+            tf.keras.backend.clear_session()
         pass
     pass
     
