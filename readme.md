@@ -9,7 +9,7 @@ steps:
 
 使用mobilenet_v2
 在test_size=0.1下，
-原先模型(AveragePooling2D - Flatten - Dense_128 - Dropout_0.5 - Dense_2_softmax)得:
+原先模型(AveragePooling2D - Flatten - Dense_128 - Dropout_0.5 - Dense_2_softmax)得: \n
   -acc=0.9864
   -test_acc=0.9843
   
