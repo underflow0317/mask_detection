@@ -29,4 +29,6 @@ steps:
   
 在模型變得thin+tall時，相較於原先fat+short的模型，當訓練資料較小時有著更高的測試準確率(e.g.,當test_size=0.3時)，i.e,thin+tall的模型對於未知的(private)資料集能有較佳的準確度。
  
-
+其他應用:  
+Cyber Security:  
+-Facial Authentication System for the Web:將Upload image改為由鏡頭提供，以至於即時識別身分，可用於線上監考
