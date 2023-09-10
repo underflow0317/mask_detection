@@ -6,7 +6,8 @@ steps:
    2-1. web_image/app.py  
        2-1-1. Select and Uploads image  
        2-1-2. Flask 呼叫 detect_mask_image.py to detect  
-       2-1-3. Result 將回傳至Flask並呈現在web  
+       2-1-3. Result 將回傳至Flask並呈現在web
+     
    2-2. web_video/app.py  
        2-2-1. flask透過鏡頭即時顯示result，利用threading更新fps  
    
