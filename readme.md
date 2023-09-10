@@ -2,10 +2,15 @@ face_detection(res10_300x300_ssd_iter_140000.caffemodel) is from: https://github
 
 steps:
 1. 用 opt_train.py 產生 mask detection module
-2. 執行 web/app.py
-3. Select and Uploads image 
-4. Flask 呼叫 detect_mask_image.py to detect 
-5. Result 將回傳至Flask並呈現在web
+2. 執行  
+   2-1. web_image/app.py  
+       2-1-1. Select and Uploads image  
+       2-1-2. Flask 呼叫 detect_mask_image.py to detect  
+       2-1-3. Result 將回傳至Flask並呈現在web
+     
+   2-2. web_video/app.py  
+       2-2-1. flask透過鏡頭即時顯示result，利用threading更新fps  
+   
 
 使用mobilenet_v2  
 在test_size=0.1下，  
