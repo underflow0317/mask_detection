@@ -2,7 +2,7 @@ face_detection(res10_300x300_ssd_iter_140000.caffemodel) is from: https://github
 
 steps:
 1. 用 opt_train.py 產生 mask detection module
-2. 執行
+2. 執行  
    2-1. web_image/app.py  
        2-1-1. Select and Uploads image  
        2-1-2. Flask 呼叫 detect_mask_image.py to detect  
