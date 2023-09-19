@@ -1,5 +1,17 @@
-face_detection(res10_300x300_ssd_iter_140000.caffemodel) is from: https://github.com/keyurr2/face-detection/tree/master
+face_detection(res10_300x300_ssd_iter_140000.caffemodel) is from: https://github.com/keyurr2/face-detection/tree/master  
 
+python == 3.8.5  
+tensorflow == 2.3  
+keras == 2.4.3  
+scikit-image == 0.17.2  
+scikit-learn == 0.23.2  
+scikit-video == 1.1.11  
+numpy == 1.18.5  
+pickleshare == 0.7.5  
+imutils == 0.5.4  
+flask == 2.3.3  
+opencv-python == 4.4.0.42  
+  
 steps:
 1. 用 opt_train.py 產生 mask detection module
 2. 執行  
