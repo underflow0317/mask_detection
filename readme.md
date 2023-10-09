@@ -1,5 +1,17 @@
-face_detection(res10_300x300_ssd_iter_140000.caffemodel) is from: https://github.com/keyurr2/face-detection/tree/master
+face_detection(res10_300x300_ssd_iter_140000.caffemodel) is from: https://github.com/keyurr2/face-detection/tree/master  
 
+python == 3.8.5  
+tensorflow == 2.3  
+keras == 2.4.3  
+scikit-image == 0.17.2  
+scikit-learn == 0.23.2  
+scikit-video == 1.1.11  
+numpy == 1.18.5  
+pickleshare == 0.7.5  
+imutils == 0.5.4  
+flask == 2.3.3  
+opencv-python == 4.4.0.42  
+  
 steps:
 1. 用 opt_train.py 產生 mask detection module
 2. 執行  
@@ -14,16 +26,17 @@ steps:
 
 使用mobilenet_v2  
 
-原先模型(AveragePooling2D - Flatten - Dense_128 - Dropout_0.5 - Dense_2_softmax): 
+原先模型: AveragePooling2D - Flatten - Dense_128 - Dropout_0.5 - Dense_2_softmax  
 
-  
 為使模型更符合"深度"學習，將原先模型(fat+short)增加Dense layer數目並減少Dense layer中的neuron(thin+tall):  
-1. AveragePooling2D - Flatten - Dense_64 - Dense_64 - Dropout_0.5 - Dense_2_softmax
-2. AveragePooling2D - Flatten - Dense_32 - Dropout_0.25 - Dense_32 - Dropout_0.25 - Dense_32 - Dropout_0.25 - Dense_32 - Dropout_0.5 - Dense_2_softmax
+1. AveragePooling2D - Flatten - Dense_64 - Dense_64 - Dropout_0.5 - Dense_2_softmax  
+2. AveragePooling2D - Flatten - Dense_32 - Dropout_0.25 - Dense_32 - Dropout_0.25 - Dense_32 - Dropout_0.25 - Dense_32 - Dropout_0.5 - Dense_2_softmax  
 
-  
-在模型變得thin+tall時，相較於原先fat+short的模型，當訓練資料較小時有著更高的測試準確率(e.g.,當train_size=2000 or 1000時)，i.e,thin+tall的模型對於未知的(private)資料集能有較佳的準確度。
+![module_compare](https://github.com/underflow0317/mask_detection/blob/main/module_opt.png)  
+
+可以看出，thin+tall在train size<=2000後，會比fat+short更學習成效。  
+所以在模型變得thin+tall時，相較於原先fat+short的模型，當訓練資料較小時有著更高的測試準確率(e.g.,當train_size=2000 or 1000時)，i.e,thin+tall的模型對於未知的(private)資料集能有較佳的準確度。
  
 其他應用:  
 Cyber Security:  
--Facial Authentication System for the Web:將Upload image改為由鏡頭提供，以至於即時識別身分，可用於線上監考
+-Facial Authentication System for the Web:將Upload image改為由鏡頭提供，以至於即時識別身分，可用於線上監考。
