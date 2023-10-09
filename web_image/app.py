@@ -3,16 +3,15 @@ from werkzeug.utils import secure_filename
 import os
 
 import sys
-sys.path.append('../')  # 添加上一级目录到模块搜索路径
-import detect_mask_image  # 导入上一级目录中的Python文件中的函数
-
+sys.path.append('../')  # Add the parent directory to the module search path
+import detect_mask_image  # Import functions from a Python file in the parent directory
 
 app = Flask(__name__)
 
-# 配置上传文件的保存目录
+# Configure the upload file saving directory
 app.config['UPLOAD_FOLDER'] = 'uploads'
 
-# 允许上传的文件类型
+# Allowable file types for upload
 app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg'}
 
 def allowed_file(filename):
@@ -32,10 +31,10 @@ def upload_file():
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
         file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        # 在上传成功后调用检测口罩函数，并传递文件名参数
+        # Call the mask detection function after a successful upload and pass the filename as a parameter
         generated_image_filename = detect_mask_image.prepare(filename)
         return render_template('result.html', image_filename=generated_image_filename)
-        
+
     else:
         return 'Invalid file type'
 

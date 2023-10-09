@@ -1,7 +1,7 @@
 import tensorflow as tf
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.applications import MobileNetV2
-from tensorflow.keras.layers import AveragePooling2D,MaxPooling2D, Dropout, Flatten, Dense, Input
+from tensorflow.keras.layers import AveragePooling2D, MaxPooling2D, Dropout, Flatten, Dense, Input
 from tensorflow.keras.models import Model, Sequential
 from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 from tensorflow.keras.preprocessing.image import img_to_array, load_img
@@ -13,9 +13,10 @@ import random
 import numpy as np
 import pickle
 
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2' 
+# Set TensorFlow log level
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
-# 设置混合精度策略
+# Set mixed precision policy
 dtype = "float32"
 mixed_precision = False
 
@@ -32,54 +33,48 @@ class CModel(tf.Module):
         self.var_map = {}
         self.op_map = {}
         self.init_var()
-    pass
-    
-    # 初始化模型參數
+
+    # Initialize model parameters
     def init_var(self):
-        # 創建模型的基礎層
-        z_size = 3  # rgb
+        # Create the base layers of the model
+        z_size = 3  # RGB
         num_of_types = 2  # 0: no mask, 1: mask
-        
+
         baseModel = MobileNetV2(weights="imagenet", include_top=False, input_tensor=Input(shape=(self.width, self.height, z_size)))
-        
+
         headModel = baseModel.output
         headModel = AveragePooling2D(pool_size=(7, 7))(headModel)
         headModel = Flatten(name="flatten")(headModel)
         headModel = Dense(64, activation="relu")(headModel)
         headModel = Dropout(0.25)(headModel)
         headModel = Dense(32, activation="relu")(headModel)
-        #headModel = Dropout(0.25)(headModel)
-        #headModel = Dense(16, activation="relu")(headModel)
-        #headModel = Dropout(0.25)(headModel)
-        #headModel = Dense(16, activation="relu")(headModel)
-        headModel = Dropout(0.5)(headModel) #Dropout neuron避免overfitting
+        # headModel = Dropout(0.25)(headModel)
+        # headModel = Dense(16, activation="relu")(headModel)
+        # headModel = Dropout(0.25)(headModel)
+        # headModel = Dense(16, activation="relu")(headModel)
+        headModel = Dropout(0.5)(headModel)  # Dropout neurons to avoid overfitting
         headModel = Dense(num_of_types, activation="softmax")(headModel)
 
         model = Model(inputs=baseModel.input, outputs=headModel)
-        
+
         for layer in baseModel.layers:
             layer.trainable = False
-        pass
-        
+
         self.var_map['model'] = model
-    pass
-    
-    # 定義預測函數，使用 TensorFlow 函數簽名
+
+    # Define the prediction function using TensorFlow function signature
     @tf.function(input_signature=[tf.TensorSpec([None, 224, 224, 3], tf.float32)])
-    
     def predict(self, i_x):
-        # 預測處理
+        # Prediction process
         self.op_map['tf_input_reshape'] = i_x
         self.op_map['prediction'] = self.var_map['model'](self.op_map['tf_input_reshape'])
         return self.op_map['prediction']
-    pass
-    
-    # 計算損失函數
+
+    # Compute the loss function
     def get_loss(self, y, prediction):
         return tf.reduce_mean(-tf.reduce_sum(tf.constant(y, dtype=tf.float32) * tf.math.log(prediction), axis=[1]))
-    pass
-    
-    # 測試模型
+
+    # Test the model
     def test(self, testY, testX):
         _testX = TF_Process.to_tensor(testX)
         prediction = self.predict(_testX)
@@ -88,9 +83,8 @@ class CModel(tf.Module):
         _succ = np.sum(z == 0)
         total = len(testY)
         return _succ / total
-    pass
-    
-    # 訓練模型
+
+    # Train the model
     def train(self, y, x):
         with tf.GradientTape() as tape:
             x = TF_Process.to_tensor(x)
@@ -100,10 +94,9 @@ class CModel(tf.Module):
         result = zip(g, self.var_map['model'].trainable_variables)
         self.opt.apply_gradients(result)
         return L
-    pass
-    
+
 class TF_Process():
-    @staticmethod # 指傳入自定義的參數即可
+    @staticmethod
     def Image_to_Array(pic, width=224, height=224):
         image = load_img(pic, target_size=(width, height))
         image = img_to_array(image)
@@ -121,35 +114,31 @@ class Data_Process():
     def load_pictures(picdir, width_size, height_size):
         x_data = []
         y_labels = []
-        
+
         for dirPath, _, fileNames in os.walk(picdir):
             for f in fileNames:
                 ans = int(dirPath[len(picdir):])
                 PicDir = os.path.join(dirPath, f)
                 NArray_2D = TF_Process.Image_to_Array(PicDir, width_size, height_size)
-                
+
                 y_labels.append(ans)
                 x_data.append(NArray_2D)
-            pass
-        pass
+
         return y_labels, x_data
-    pass
 
     @staticmethod
     def clean_data(i_y, i_x):
         x_data = np.array(i_x, dtype="float32")
         y_labels = np.array(i_y)
         lb = LabelBinarizer()
-        y_labels3 = to_categorical(y_labels, 2) 
-        
+        y_labels3 = to_categorical(y_labels, 2)
+
         return y_labels3, x_data
-    pass
 
     @staticmethod
     def save_sample(i_y, i_x, i_filename):
         with open(i_filename, 'wb') as f:
             pickle.dump([i_y, i_x], f)
-    pass
 
     @staticmethod
     def load_sample(i_filename):
@@ -158,26 +147,23 @@ class Data_Process():
         y_labels = r[0]
         x_data = r[1]
         return y_labels, x_data
-    pass
 
     @staticmethod
     def get_sample(i_y, i_x, i_sample_size):
         if len(i_y) < i_sample_size:
             i_sample_size = len(i_y)
-        pass
-        
+
         x_batch = []
         y_batch = []
-        
+
         sample = random.sample(range(len(i_y)), i_sample_size)
         x_batch = [i_x[i] for i in sample]
         y_batch = [i_y[i] for i in sample]
-     
+
         return y_batch, x_batch
-    pass
 
 def main():
-    # 讀取圖片和處理數據
+    # Read images and process data
     picdir = "./TrainData/"
     width_size = 224
     height_size = 224
@@ -185,15 +171,15 @@ def main():
     y_labels, x_data = Data_Process.load_pictures(picdir, width_size, height_size)
     Data_Process.save_sample(y_labels, x_data, 'pic_mask_db_224_224.p')
     y_labels, x_data = Data_Process.load_sample('pic_mask_db_224_224.p')
-    
+
     y_c_labels, x_c_data = Data_Process.clean_data(y_labels, x_data)
     (trainX, testX, trainY, testY) = train_test_split(x_c_data, y_c_labels, test_size=0.1, stratify=y_c_labels, random_state=42)
-    
-    # 定義訓練參數
+
+    # Define training parameters
     Training_times = 10
     steps_in_one_training_time = 20
-    
-    # 使用影像數據增強器創建模型
+
+    # Create a model instance using an image data generator
     aug = ImageDataGenerator(
         rotation_range=20,
         zoom_range=0.15,
@@ -202,36 +188,33 @@ def main():
         shear_range=0.15,
         horizontal_flip=True,
         fill_mode="nearest")
-    
-    # 創建 CModel 的實例
+
+    # Create an instance of the CModel
     model = CModel(width_size, height_size)
-    
-    # 進行多次訓練迴圈
+
+    # Perform multiple training loops
     for e in range(Training_times):
         i = 0
-        # 進行每個訓練時間的多個步驟
+        # Perform multiple steps within each training time
         for x_batch, y_batch in aug.flow(trainX, trainY, batch_size=32):
             i += 1
             if i >= steps_in_one_training_time:
                 break
-            pass
-            
-            # 進行模型訓練
+
+            # Train the model
             print('Epoch: ', e, " step ", i, flush=True, end='')
             model.train(y_batch, x_batch)
-            
-            # 測試並顯示準確度
+
+            # Test and display accuracy
             accuracy = model.test(testY, testX)
             print(", accuracy, {}".format(accuracy), flush=True)
-            
-            # 清除会话以释放GPU内存
+
+            # Clear the session to release GPU memory
             tf.keras.backend.clear_session()
-        pass
-    pass
-    
-    print("#### training finished ")
-    
-    # 顯示最終測試準確度
+
+    print(" training finished ")
+
+    # Display the final testing accuracy
     _sample_y, _sample_x = Data_Process.get_sample(testY, testX, 128)
     accuracy = model.test(_sample_y, _sample_x)
     print("final testing: accuracy {}".format(accuracy), flush=True)
@@ -240,6 +223,4 @@ def main():
     tf.saved_model.save(model, "masked_module")
 
 if __name__ == '__main__':
-    main()  
-pass
-
+    main()
